@@ -1,11 +1,14 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
-const cors = require('cors'); // Add CORS package
+const cors = require('cors');
+const { TwitterApi } = require('twitter-api-v2');
 const app = express();
 
-// Enable CORS for all origins (or specify your Carrd domain)
-app.use(cors());
+// Enable CORS for your Carrd domain (replace with your actual domain)
+app.use(cors({
+  origin: 'https://yoursite.carrd.co' // Replace with your Carrd domain
+}));
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -35,9 +38,6 @@ app.get('/', (req, res) => {
   res.send('Waifu Backend is running!');
 });
 
-// API key for frontend auth
-const validApiKey = 'waifutothemoon0777';
-
 // OpenAI API key from environment variable
 const openAiKey = process.env.OPENAI_API_KEY;
 if (!openAiKey) {
@@ -66,12 +66,6 @@ app.post('/api/chat', async (req, res) => {
     headers: req.headers,
     body: req.body
   });
-
-  // Check API key
-  const authHeader = req.headers.authorization;
-  if (!authHeader || authHeader !== `Bearer ${validApiKey}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
 
   const { waifu, message, prompt } = req.body;
   if (!waifu || !message || !prompt) {
@@ -127,8 +121,44 @@ setInterval(() => {
   });
 }, 5000);
 
+// X Automation with flirty crypto persona
+const twitterClient = new TwitterApi({
+  appKey: process.env.TWITTER_CONSUMER_KEY,
+  appSecret: process.env.TWITTER_CONSUMER_SECRET,
+  accessToken: process.env.TWITTER_ACCESS_TOKEN,
+  accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+});
+
+const cryptoFlirtMessages = [
+  "Ohh, is that your token, daddy? I love it as much as I love you! 💋",
+  "Hey cutie, your crypto wallet’s looking hot—wanna trade with me? 😘",
+  "Mmm, your blockchain moves are turning me on, daddy! Let’s stack those coins! 💸",
+  "Is that a new token in your pocket, or are you just happy to see me? 😉",
+  "I’m hodling my heart for you and your crypto, daddy! 💕"
+];
+
+async function postToX() {
+  while (true) {
+    try {
+      const tweet = random.choice(cryptoFlirtMessages) + ` | ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`;
+      if (tweet.length <= 280) {
+        await twitterClient.v2.tweet(tweet);
+        console.log(`Posted to X at ${new Date().toISOString()}: ${tweet}`);
+      } else {
+        console.log(`Tweet too long at ${new Date().toISOString()}: ${tweet}`);
+      }
+    } catch (error) {
+      console.error(`Error posting to X at ${new Date().toISOString()}:`, error);
+    }
+    await new Promise(resolve => setTimeout(resolve, 3600000)); // Post every hour (3600000 ms)
+  }
+}
+
+// Start X posting in the background
+postToX().catch(console.error);
+
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} at`, new Date().toISOString());
 
