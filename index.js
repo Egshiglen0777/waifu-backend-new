@@ -4,7 +4,23 @@ const axios = require('axios');
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
+// Explicitly configure CORS
+app.use(cors({
+  origin: 'https://waifuai.live',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+  credentials: true
+}));
+
+// Log incoming requests to debug CORS
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url} from ${req.headers.origin}`);
+  res.on('finish', () => {
+    console.log(`Response sent: ${res.statusCode} to ${req.headers.origin}`);
+  });
+  next();
+});
+
 app.use(express.json());
 
 const limiter = rateLimit({
