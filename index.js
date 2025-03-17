@@ -3,31 +3,25 @@ const rateLimit = require('express-rate-limit');
 const axios = require('axios');
 const app = express();
 
-// Manually set CORS headers
+// Middleware to log and set CORS headers
 app.use((req, res, next) => {
-  console.log(`Setting CORS headers for ${req.method} ${req.url} from ${req.headers.origin}`);
+  console.log(`Received request: ${req.method} ${req.url} from ${req.headers.origin || 'unknown'} with headers:`, req.headers);
   res.header('Access-Control-Allow-Origin', 'https://waifuai.live');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Origin');
   res.header('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    console.log('Sending preflight response for OPTIONS request');
+    return res.sendStatus(204);
+  }
   next();
 });
 
-// Handle OPTIONS preflight requests
-app.options('*', (req, res) => {
-  console.log('Handling OPTIONS preflight request');
-  res.header('Access-Control-Allow-Origin', 'https://waifuai.live');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(204);
-});
-
-// Log incoming requests
+// Log incoming requests and responses
 app.use((req, res, next) => {
-  console.log(`Incoming request: ${req.method} ${req.url} from ${req.headers.origin}`);
+  console.log(`Processing request: ${req.method} ${req.url}`);
   res.on('finish', () => {
-    console.log(`Response sent: ${res.statusCode} to ${req.headers.origin}`);
+    console.log(`Response sent: ${res.statusCode} to ${req.headers.origin || 'unknown'}`);
   });
   next();
 });
