@@ -7,7 +7,7 @@ const app = express();
 
 // Enable CORS for your Carrd domain (replace with your actual domain)
 app.use(cors({
-  origin: 'https://yoursite.carrd.co' // Replace with your Carrd domain
+  origin: 'https://waifuai.live'
 }));
 
 // Middleware to parse JSON requests
