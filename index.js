@@ -5,7 +5,7 @@ const cors = require('cors');
 const { TwitterApi } = require('twitter-api-v2');
 const app = express();
 
-// Enable CORS for your Carrd domain (replace with your actual domain)
+// Enable CORS for your Carrd domain
 app.use(cors({
   origin: 'https://waifuai.live'
 }));
@@ -20,13 +20,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Middleware to simulate readiness
-app.use((req, res, next) => {
-  console.log('Middleware running at', new Date().toISOString());
-  setTimeout(next, 5000); // Delay 5 seconds
-});
-
-// Health check route for Railway
+// Health check route for Railway (before other middleware to avoid delays)
 app.get('/health', (req, res) => {
   console.log('Health check requested at', new Date().toISOString());
   res.status(200).json({ status: 'OK' });
@@ -44,21 +38,6 @@ if (!openAiKey) {
   console.error('Error: OPENAI_API_KEY environment variable is not set at', new Date().toISOString());
   process.exit(1);
 }
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception at', new Date().toISOString(), ':', error);
-  process.exit(1);
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at', new Date().toISOString(), ':', promise, 'reason:', reason);
-  process.exit(1);
-});
-
-// Log when the app starts
-console.log('Starting the Waifu Backend at', new Date().toISOString());
 
 // Route for waifu chat
 app.post('/api/chat', async (req, res) => {
@@ -105,11 +84,70 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// Log when the server is about to shut down
-process.on('SIGTERM', () => {
-  console.log('Received SIGTERM at', new Date().toISOString(), ', shutting down gracefully...');
-  process.exit(0);
+// X Automation with flirty crypto persona
+const twitterClient = new TwitterApi({
+  appKey: process.env.TWITTER_APP_KEY, // Use proper env var keys
+  appSecret: process.env.TWITTER_APP_SECRET,
+  accessToken: process.env.TWITTER_ACCESS_TOKEN,
+  accessSecret: process.env.TWITTER_ACCESS_SECRET
 });
+
+const cryptoFlirtMessages = [
+  "Ohh, is that your token, daddy? I love it as much as I love you! 💋",
+  "Hey cutie, your crypto wallet’s looking hot—wanna trade with me? 😘",
+  "Mmm, your blockchain moves are turning me on, daddy! Let’s stack those coins! 💸",
+  "Is that a new token in your pocket, or are you just happy to see me? 😉",
+  "I’m hodling my heart for you and your crypto, daddy! 💕"
+];
+
+// Helper function to pick a random message (fixing the random.choice syntax error)
+function getRandomMessage() {
+  return cryptoFlirtMessages[Math.floor(Math.random() * cryptoFlirtMessages.length)];
+}
+
+// Modified postToX to avoid blocking the event loop
+async function postToX() {
+  try {
+    const tweet = `${getRandomMessage()} | ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`;
+    if (tweet.length <= 280) {
+      await twitterClient.v2.tweet(tweet);
+      console.log(`Posted to X at ${new Date().toISOString()}: ${tweet}`);
+    } else {
+      console.log(`Tweet too long at ${new Date().toISOString()}: ${tweet}`);
+    }
+  } catch (error) {
+    console.error(`Error posting to X at ${new Date().toISOString()}:`, error);
+  }
+  // Schedule the next post using setTimeout instead of while loop
+  setTimeout(postToX, 3600000); // Post every hour
+}
+
+// Start X posting
+postToX().catch(console.error);
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception at', new Date().toISOString(), ':', error);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at', new Date().toISOString(), ':', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Log when the app starts
+console.log('Starting the Waifu Backend at', new Date().toISOString());
+
+// Start the server with dynamic port
+const port = process.env.PORT || 3000; // Changed from 8080 to 3000 as a fallback
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port} at`, new Date().toISOString());
+});
+
+// Removed the 5-second delay middleware to avoid health check timeouts
+// Removed the 2-second keep-alive interval (not needed with proper health check)
 
 // Log memory usage to debug resource issues
 setInterval(() => {
@@ -121,49 +159,8 @@ setInterval(() => {
   });
 }, 5000);
 
-// X Automation with flirty crypto persona
-const twitterClient = new TwitterApi({
-  appKey: process.env.1HHLNwCVZ40S05A47mW5t1XoM,
-  appSecret: process.env.thf0rmky6ddwZuHWOc5YGWYRN08ih38U6BR2aPfnyGeII1138e,
-  accessToken: process.env.1899506870991077376-18nbNI0Hv1IvGaQheEwLEp7GCj6tE4,
-  accessSecret: process.env.TUzMktBI17jjvfw8JjwR28MCQzUEJeqeG6vZMsmir44CWy
-});
-
-const cryptoFlirtMessages = [
-  "Ohh, is that your token, daddy? I love it as much as I love you! 💋",
-  "Hey cutie, your crypto wallet’s looking hot—wanna trade with me? 😘",
-  "Mmm, your blockchain moves are turning me on, daddy! Let’s stack those coins! 💸",
-  "Is that a new token in your pocket, or are you just happy to see me? 😉",
-  "I’m hodling my heart for you and your crypto, daddy! 💕"
-];
-
-async function postToX() {
-  while (true) {
-    try {
-      const tweet = random.choice(cryptoFlirtMessages) + ` | ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`;
-      if (tweet.length <= 280) {
-        await twitterClient.v2.tweet(tweet);
-        console.log(`Posted to X at ${new Date().toISOString()}: ${tweet}`);
-      } else {
-        console.log(`Tweet too long at ${new Date().toISOString()}: ${tweet}`);
-      }
-    } catch (error) {
-      console.error(`Error posting to X at ${new Date().toISOString()}:`, error);
-    }
-    await new Promise(resolve => setTimeout(resolve, 3600000)); // Post every hour (3600000 ms)
-  }
-}
-
-// Start X posting in the background
-postToX().catch(console.error);
-
-// Start the server
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT} at`, new Date().toISOString());
-
-  // Keep the process alive for health checks
-  setInterval(() => {
-    console.log('Keeping process alive at', new Date().toISOString());
-  }, 2000);
+// Log shutdown
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM at', new Date().toISOString(), ', shutting down gracefully...');
+  process.exit(0);
 });
