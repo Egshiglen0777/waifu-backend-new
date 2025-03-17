@@ -24,13 +24,16 @@ app.get('/', (req, res) => {
   res.send('Waifu Backend is running!');
 });
 
-const openAiKey = process.env.OPENAI_API_KEY;
-if (!openAiKey) {
-  console.error('Error: OPENAI_API_KEY environment variable is not set at', new Date().toISOString());
-  process.exit(1);
+const openAiKey = process.env.OPENAI_API_KEY || 'fallback-key-not-used'; // Fallback to prevent crash
+if (!openAiKey || openAiKey === 'fallback-key-not-used') {
+  console.warn('Warning: OPENAI_API_KEY not set, /api/chat will fail');
 }
 
 app.post('/api/chat', async (req, res) => {
+  if (!openAiKey || openAiKey === 'fallback-key-not-used') {
+    return res.status(500).json({ error: 'OPENAI_API_KEY not configured' });
+  }
+
   console.log('Incoming request to /api/chat at', new Date().toISOString(), ':', {
     headers: req.headers,
     body: req.body
