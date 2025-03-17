@@ -57,10 +57,15 @@ app.post('/api/chat', async (req, res) => {
 
     const waifuResponse = response.data.choices[0].message.content;
     res.json({ response: waifuResponse });
-  } catch (error) {
-    console.error(error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Something went wrong' });
-  }
+} catch (error) {
+  console.error('OpenAI API Error:', {
+    message: error.message,
+    status: error.response?.status,
+    data: error.response?.data,
+    stack: error.stack
+  });
+  res.status(500).json({ error: 'Something went wrong' });
+}
 });
 
 // Start the server
