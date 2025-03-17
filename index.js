@@ -13,6 +13,16 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Health check route for Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
+
+// Root route to test basic connectivity
+app.get('/', (req, res) => {
+  res.send('Waifu Backend is running!');
+});
+
 // API key for frontend auth
 const validApiKey = 'waifutothemoon0777'; // Your custom random key
 
@@ -23,8 +33,25 @@ if (!openAiKey) {
   process.exit(1);
 }
 
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
 // Route for waifu chat
 app.post('/api/chat', async (req, res) => {
+  console.log('Incoming request to /api/chat:', {
+    headers: req.headers,
+    body: req.body
+  });
+
   // Check API key
   const authHeader = req.headers.authorization;
   if (!authHeader || authHeader !== `Bearer ${validApiKey}`) {
@@ -57,19 +84,19 @@ app.post('/api/chat', async (req, res) => {
 
     const waifuResponse = response.data.choices[0].message.content;
     res.json({ response: waifuResponse });
-} catch (error) {
-  console.error('OpenAI API Error:', {
-    message: error.message,
-    status: error.response?.status,
-    data: error.response?.data,
-    stack: error.stack
-  });
-  res.status(500).json({ error: 'Something went wrong' });
-}
+  } catch (error) {
+    console.error('OpenAI API Error:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      stack: error.stack
+    });
+    res.status(500).json({ error: 'Something went wrong' });
+  }
 });
 
 // Start the server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
