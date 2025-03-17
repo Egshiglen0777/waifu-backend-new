@@ -2,7 +2,6 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
 const cors = require('cors');
-const { TwitterApi } = require('twitter-api-v2');
 const app = express();
 
 app.use(cors());
@@ -24,7 +23,7 @@ app.get('/', (req, res) => {
   res.send('Waifu Backend is running!');
 });
 
-const openAiKey = process.env.OPENAI_API_KEY || 'fallback-key-not-used'; // Fallback to prevent crash
+const openAiKey = process.env.OPENAI_API_KEY || 'fallback-key-not-used';
 if (!openAiKey || openAiKey === 'fallback-key-not-used') {
   console.warn('Warning: OPENAI_API_KEY not set, /api/chat will fail');
 }
@@ -76,46 +75,6 @@ app.post('/api/chat', async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
-
-const twitterClient = new TwitterApi({
-  appKey: process.env.TWITTER_APP_KEY,
-  appSecret: process.env.TWITTER_APP_SECRET,
-  accessToken: process.env.TWITTER_ACCESS_TOKEN,
-  accessSecret: process.env.TWITTER_ACCESS_SECRET
-});
-
-const cryptoFlirtMessages = [
-  "Ohh, is that your token, daddy? I love it as much as I love you! 💋",
-  "Hey cutie, your crypto wallet’s looking hot—wanna trade with me? 😘",
-  "Mmm, your blockchain moves are turning me on, daddy! Let’s stack those coins! 💸",
-  "Is that a new token in your pocket, or are you just happy to see me? 😉",
-  "I’m hodling my heart for you and your crypto, daddy! 💕"
-];
-
-function getRandomMessage() {
-  return cryptoFlirtMessages[Math.floor(Math.random() * cryptoFlirtMessages.length)];
-}
-
-async function postToX() {
-  try {
-    const tweet = `${getRandomMessage()} | ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`;
-    if (tweet.length <= 280) {
-      await twitterClient.v2.tweet(tweet);
-      console.log(`Posted to X at ${new Date().toISOString()}: ${tweet}`);
-    } else {
-      console.log(`Tweet too long at ${new Date().toISOString()}: ${tweet}`);
-    }
-  } catch (error) {
-    console.error(`Error posting to X at ${new Date().toISOString()}:`, error);
-  }
-  setTimeout(postToX, 3600000);
-}
-
-if (process.env.TWITTER_APP_KEY && process.env.TWITTER_APP_SECRET && process.env.TWITTER_ACCESS_TOKEN && process.env.TWITTER_ACCESS_SECRET) {
-  postToX().catch(console.error);
-} else {
-  console.error('Twitter API credentials missing, skipping X posting');
-}
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception at', new Date().toISOString(), ':', error);
