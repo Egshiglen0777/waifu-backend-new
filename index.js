@@ -1,18 +1,29 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
-const cors = require('cors');
 const app = express();
 
-// Explicitly configure CORS
-app.use(cors({
-  origin: 'https://waifuai.live',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true
-}));
+// Manually set CORS headers
+app.use((req, res, next) => {
+  console.log(`Setting CORS headers for ${req.method} ${req.url} from ${req.headers.origin}`);
+  res.header('Access-Control-Allow-Origin', 'https://waifuai.live');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
 
-// Log incoming requests to debug CORS
+// Handle OPTIONS preflight requests
+app.options('*', (req, res) => {
+  console.log('Handling OPTIONS preflight request');
+  res.header('Access-Control-Allow-Origin', 'https://waifuai.live');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(204);
+});
+
+// Log incoming requests
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.url} from ${req.headers.origin}`);
   res.on('finish', () => {
