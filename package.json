@@ -1,0 +1,17 @@
+{
+  "name": "waifu-backend",
+  "version": "1.0.0",
+  "description": "Backend for waifu chat bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "axios": "^1.6.8"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
