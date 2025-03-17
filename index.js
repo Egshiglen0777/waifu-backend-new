@@ -123,10 +123,10 @@ setInterval(() => {
 
 // X Automation with flirty crypto persona
 const twitterClient = new TwitterApi({
-  appKey: process.env.TWITTER_CONSUMER_KEY,
-  appSecret: process.env.TWITTER_CONSUMER_SECRET,
-  accessToken: process.env.TWITTER_ACCESS_TOKEN,
-  accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+  appKey: process.env.1HHLNwCVZ40S05A47mW5t1XoM,
+  appSecret: process.env.thf0rmky6ddwZuHWOc5YGWYRN08ih38U6BR2aPfnyGeII1138e,
+  accessToken: process.env.1899506870991077376-18nbNI0Hv1IvGaQheEwLEp7GCj6tE4,
+  accessSecret: process.env.TUzMktBI17jjvfw8JjwR28MCQzUEJeqeG6vZMsmir44CWy
 });
 
 const cryptoFlirtMessages = [
