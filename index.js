@@ -1,7 +1,11 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
+const cors = require('cors'); // Add CORS package
 const app = express();
+
+// Enable CORS for all origins (or specify your Carrd domain)
+app.use(cors());
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -12,6 +16,12 @@ const limiter = rateLimit({
   max: 10 // 10 requests per IP
 });
 app.use(limiter);
+
+// Middleware to simulate readiness
+app.use((req, res, next) => {
+  console.log('Middleware running at', new Date().toISOString());
+  setTimeout(next, 5000); // Delay 5 seconds
+});
 
 // Health check route for Railway
 app.get('/health', (req, res) => {
@@ -26,7 +36,7 @@ app.get('/', (req, res) => {
 });
 
 // API key for frontend auth
-const validApiKey = 'waifutothemoon0777'; // Your custom random key
+const validApiKey = 'waifutothemoon0777';
 
 // OpenAI API key from environment variable
 const openAiKey = process.env.OPENAI_API_KEY;
@@ -107,13 +117,23 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
+// Log memory usage to debug resource issues
+setInterval(() => {
+  const used = process.memoryUsage();
+  console.log('Memory usage at', new Date().toISOString(), ':', {
+    heapTotal: Math.round(used.heapTotal / 1024 / 1024) + ' MB',
+    heapUsed: Math.round(used.heapUsed / 1024 / 1024) + ' MB',
+    external: Math.round(used.external / 1024 / 1024) + ' MB'
+  });
+}, 5000);
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} at`, new Date().toISOString());
 
-  // Keep the process alive for a bit to allow health checks
+  // Keep the process alive for health checks
   setInterval(() => {
     console.log('Keeping process alive at', new Date().toISOString());
-  }, 10000); // Log every 10 seconds
+  }, 2000);
 });
