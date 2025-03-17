@@ -15,11 +15,13 @@ app.use(limiter);
 
 // Health check route for Railway
 app.get('/health', (req, res) => {
+  console.log('Health check requested at', new Date().toISOString());
   res.status(200).json({ status: 'OK' });
 });
 
 // Root route to test basic connectivity
 app.get('/', (req, res) => {
+  console.log('Root route requested at', new Date().toISOString());
   res.send('Waifu Backend is running!');
 });
 
@@ -29,25 +31,28 @@ const validApiKey = 'waifutothemoon0777'; // Your custom random key
 // OpenAI API key from environment variable
 const openAiKey = process.env.OPENAI_API_KEY;
 if (!openAiKey) {
-  console.error('Error: OPENAI_API_KEY environment variable is not set.');
+  console.error('Error: OPENAI_API_KEY environment variable is not set at', new Date().toISOString());
   process.exit(1);
 }
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+  console.error('Uncaught Exception at', new Date().toISOString(), ':', error);
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('Unhandled Rejection at', new Date().toISOString(), ':', promise, 'reason:', reason);
   process.exit(1);
 });
 
+// Log when the app starts
+console.log('Starting the Waifu Backend at', new Date().toISOString());
+
 // Route for waifu chat
 app.post('/api/chat', async (req, res) => {
-  console.log('Incoming request to /api/chat:', {
+  console.log('Incoming request to /api/chat at', new Date().toISOString(), ':', {
     headers: req.headers,
     body: req.body
   });
@@ -64,11 +69,11 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
-    // Call OpenAI API
+    console.log('Making OpenAI API call at', new Date().toISOString());
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-3.5-turbo', // Use 'gpt-4' if you have access
+        model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: prompt },
           { role: 'user', content: message }
@@ -82,10 +87,11 @@ app.post('/api/chat', async (req, res) => {
       }
     );
 
+    console.log('OpenAI API call successful at', new Date().toISOString());
     const waifuResponse = response.data.choices[0].message.content;
     res.json({ response: waifuResponse });
   } catch (error) {
-    console.error('OpenAI API Error:', {
+    console.error('OpenAI API Error at', new Date().toISOString(), ':', {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
@@ -95,8 +101,19 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// Log when the server is about to shut down
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM at', new Date().toISOString(), ', shutting down gracefully...');
+  process.exit(0);
+});
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT} at`, new Date().toISOString());
+
+  // Keep the process alive for a bit to allow health checks
+  setInterval(() => {
+    console.log('Keeping process alive at', new Date().toISOString());
+  }, 10000); // Log every 10 seconds
 });
