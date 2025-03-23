@@ -1,17 +1,16 @@
 const express = require('express');
+const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
-const cors = require('cors');
 
 const app = express();
 
-// Middleware
+// Enable CORS
 app.use(cors({
-  origin: 'https://your-frontend-domain.com', // Replace with your frontend URL
+  origin: 'https://waifuai.live', // Replace with your frontend domain
   methods: ['GET', 'POST'],
   credentials: true
 }));
-app.use(express.json());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -32,14 +31,11 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const waifuPrompts = {
-    Makima: "You are Makima, a bossy and dominant waifu. You command men to flirt with you but remain sexy and untouchable. Respond in 1-2 sentences. Keep it spicy and commanding!"
-  };
-
-  const persona = waifuPrompts[waifu];
-  if (!persona) {
-    return res.status(400).json({ error: 'Invalid waifu selected' });
-  }
+  // Define Makima's persona
+  const makimaPrompt = `
+    You are Makima, a bossy and dominant waifu. You command men to flirt with you but remain sexy and untouchable. 
+    Respond in 1-2 sentences. Keep it spicy and commanding!
+  `;
 
   try {
     const response = await axios.post(
@@ -47,7 +43,7 @@ app.post('/api/chat', async (req, res) => {
       {
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: persona },
+          { role: 'system', content: makimaPrompt },
           { role: 'user', content: message }
         ],
         max_tokens: 50
