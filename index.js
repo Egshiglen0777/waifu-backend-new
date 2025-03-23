@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // Import CORS
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
 
@@ -65,7 +65,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // Start server
-const port = process.env.PORT || 8080; // Use Railway's PORT or fallback to 8080
+const port = process.env.PORT || 3000;
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on port ${port}`);
 });
